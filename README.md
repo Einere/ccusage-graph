@@ -22,10 +22,10 @@ npx ccusage@latest --json > report.json
 npx ccusage@latest weekly --json > report_weekly.json
 
 # monthly
-ccusage monthly --json > report_monthly.json
+npx ccusage@latest monthly --json > report_monthly.json
 ```
 
-Then pass the JSON file to `ccusage-graph`:
+Then pass the JSON file to `npx @einere/ccusage-graph`:
 
 ```bash
 npx @einere/ccusage-graph report.json
