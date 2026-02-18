@@ -22,21 +22,21 @@ First, generate a JSON report with [ccusage](https://github.com/ryoppippi/ccusag
 
 ```bash
 # daily (default)
-ccusage --from 2026-01-19 --to 2026-02-18 --json > report.json
+npx ccusage@latest --json > report.json
 
 # weekly
-ccusage --from 2026-01-19 --to 2026-02-18 --json --weekly > report_weekly.json
+npx ccusage@latest weekly --json > report_weekly.json
 
 # monthly
-ccusage --from 2026-01-19 --to 2026-02-18 --json --monthly > report_monthly.json
+ccusage monthly --json > report_monthly.json
 ```
 
 Then pass the JSON file to `ccusage-graph`:
 
 ```bash
-ccusage-graph report.json
-ccusage-graph report_weekly.json
-ccusage-graph report_monthly.json
+npx @einere/ccusage-graph report.json
+npx @einere/ccusage-graph report_weekly.json
+npx @einere/ccusage-graph report_monthly.json
 ```
 
 ## Output Example
