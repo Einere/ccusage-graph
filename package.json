@@ -1,6 +1,6 @@
 {
   "name": "@einere/ccusage-graph",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "CLI tool to visualize ccusage JSON reports as terminal graphs",
   "type": "module",
   "bin": {
