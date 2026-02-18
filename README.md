@@ -10,12 +10,6 @@ A CLI tool to visualize [ccusage](https://github.com/ryoppippi/ccusage) JSON rep
 - Period summary (total cost, average, peak period, etc.)
 - Auto-detects JSON format from top-level key (`daily`, `weekly`, `monthly`)
 
-## Installation
-
-```bash
-npm install -g @einere/ccusage-graph
-```
-
 ## Usage
 
 First, generate a JSON report with [ccusage](https://github.com/ryoppippi/ccusage):
