@@ -64,42 +64,75 @@ try {
   process.exit(1);
 }
 
-const { daily, totals } = data;
+// ── Detect data format ──
+let entries;
+let mode; // "daily" | "weekly" | "monthly"
+let labelKey; // "date" | "week" | "month"
 
-// ── Daily Cost Chart ──
+if (data.daily) {
+  entries = data.daily;
+  mode = "daily";
+  labelKey = "date";
+} else if (data.weekly) {
+  entries = data.weekly;
+  mode = "weekly";
+  labelKey = "week";
+} else if (data.monthly) {
+  entries = data.monthly;
+  mode = "monthly";
+  labelKey = "month";
+} else {
+  console.error(`${COLORS.red}Error: Unsupported JSON format. Expected "daily", "weekly", or "monthly" key.${COLORS.reset}`);
+  process.exit(1);
+}
+
+const { totals } = data;
+
+const modeLabel = mode.charAt(0).toUpperCase() + mode.slice(1); // "Daily" | "Weekly" | "Monthly"
+const unitLabel = mode === "daily" ? "days" : mode === "weekly" ? "weeks" : "months";
+const peakLabel = mode === "daily" ? "Peak Day" : mode === "weekly" ? "Peak Week" : "Peak Month";
+const avgLabel = mode === "daily" ? "Avg/Day" : mode === "weekly" ? "Avg/Week" : "Avg/Month";
+
+function getLabel(entry) {
+  const raw = entry[labelKey];
+  if (mode === "monthly") return raw; // "2026-01"
+  return raw.slice(5); // "01-18" from "2026-01-18"
+}
+
+// ── Cost Chart ──
 console.log();
-console.log(`${COLORS.bold}${COLORS.cyan}📊 Daily Cost${COLORS.reset}`);
+console.log(`${COLORS.bold}${COLORS.cyan}📊 ${modeLabel} Cost${COLORS.reset}`);
 printSeparator();
 
-const maxCost = Math.max(...daily.map((d) => d.totalCost));
+const maxCost = Math.max(...entries.map((d) => d.totalCost));
 
-for (const day of daily) {
-  const date = day.date.slice(5);
-  const costStr = padLeft(formatCost(day.totalCost), 8);
-  const barStr = bar(day.totalCost, maxCost);
+for (const entry of entries) {
+  const label = getLabel(entry);
+  const costStr = padLeft(formatCost(entry.totalCost), 8);
+  const barStr = bar(entry.totalCost, maxCost);
 
   let barColor = COLORS.green;
-  if (day.totalCost > maxCost * 0.75) barColor = COLORS.red;
-  else if (day.totalCost > maxCost * 0.5) barColor = COLORS.yellow;
+  if (entry.totalCost > maxCost * 0.75) barColor = COLORS.red;
+  else if (entry.totalCost > maxCost * 0.5) barColor = COLORS.yellow;
 
-  console.log(`  ${COLORS.dim}${date}${COLORS.reset} ${costStr} ${barColor}${barStr}${COLORS.reset}`);
+  console.log(`  ${COLORS.dim}${label}${COLORS.reset} ${costStr} ${barColor}${barStr}${COLORS.reset}`);
 }
 
 printSeparator();
 
-// ── Daily Token Usage Chart ──
+// ── Token Usage Chart ──
 console.log();
-console.log(`${COLORS.bold}${COLORS.cyan}📈 Daily Token Usage${COLORS.reset}`);
+console.log(`${COLORS.bold}${COLORS.cyan}📈 ${modeLabel} Token Usage${COLORS.reset}`);
 printSeparator();
 
-const maxTokens = Math.max(...daily.map((d) => d.totalTokens));
+const maxTokens = Math.max(...entries.map((d) => d.totalTokens));
 
-for (const day of daily) {
-  const date = day.date.slice(5);
-  const tokenStr = padLeft(formatTokens(day.totalTokens), 8);
-  const barStr = bar(day.totalTokens, maxTokens);
+for (const entry of entries) {
+  const label = getLabel(entry);
+  const tokenStr = padLeft(formatTokens(entry.totalTokens), 8);
+  const barStr = bar(entry.totalTokens, maxTokens);
 
-  console.log(`  ${COLORS.dim}${date}${COLORS.reset} ${tokenStr} ${COLORS.blue}${barStr}${COLORS.reset}`);
+  console.log(`  ${COLORS.dim}${label}${COLORS.reset} ${tokenStr} ${COLORS.blue}${barStr}${COLORS.reset}`);
 }
 
 printSeparator();
@@ -110,8 +143,8 @@ console.log(`${COLORS.bold}${COLORS.cyan}🤖 Cost by Model${COLORS.reset}`);
 printSeparator();
 
 const modelTotals = {};
-for (const day of daily) {
-  for (const mb of day.modelBreakdowns) {
+for (const entry of entries) {
+  for (const mb of entry.modelBreakdowns) {
     if (!modelTotals[mb.modelName]) {
       modelTotals[mb.modelName] = { cost: 0, tokens: 0 };
     }
@@ -144,13 +177,13 @@ console.log();
 console.log(`${COLORS.bold}${COLORS.cyan}📋 Summary${COLORS.reset}`);
 printSeparator();
 
-const dateRange = `${daily[0].date} → ${daily[daily.length - 1].date}`;
-const activeDays = daily.length;
-const avgDailyCost = totals.totalCost / activeDays;
+const dateRange = `${entries[0][labelKey]} → ${entries[entries.length - 1][labelKey]}`;
+const activeCount = entries.length;
+const avgCost = totals.totalCost / activeCount;
 
-console.log(`  ${COLORS.dim}Period:${COLORS.reset}        ${dateRange} (${activeDays} active days)`);
+console.log(`  ${COLORS.dim}Period:${COLORS.reset}        ${dateRange} (${activeCount} active ${unitLabel})`);
 console.log(`  ${COLORS.dim}Total Cost:${COLORS.reset}    ${COLORS.bold}${formatCost(totals.totalCost)}${COLORS.reset}`);
-console.log(`  ${COLORS.dim}Avg/Day:${COLORS.reset}       ${formatCost(avgDailyCost)}`);
+console.log(`  ${COLORS.dim}${avgLabel}:${COLORS.reset}${" ".repeat(Math.max(1, 13 - avgLabel.length))}${formatCost(avgCost)}`);
 console.log(`  ${COLORS.dim}Total Tokens:${COLORS.reset}  ${formatTokens(totals.totalTokens)}`);
 console.log(
   `  ${COLORS.dim}Input:${COLORS.reset}         ${formatTokens(totals.inputTokens)}  ${COLORS.dim}Output:${COLORS.reset} ${formatTokens(totals.outputTokens)}`,
@@ -159,9 +192,9 @@ console.log(
   `  ${COLORS.dim}Cache Create:${COLORS.reset}  ${formatTokens(totals.cacheCreationTokens)}  ${COLORS.dim}Cache Read:${COLORS.reset} ${formatTokens(totals.cacheReadTokens)}`,
 );
 
-const peakDay = daily.reduce((max, d) => (d.totalCost > max.totalCost ? d : max));
+const peakEntry = entries.reduce((max, d) => (d.totalCost > max.totalCost ? d : max));
 console.log(
-  `  ${COLORS.dim}Peak Day:${COLORS.reset}      ${peakDay.date} (${COLORS.red}${formatCost(peakDay.totalCost)}${COLORS.reset})`,
+  `  ${COLORS.dim}${peakLabel}:${COLORS.reset}${" ".repeat(Math.max(1, 13 - peakLabel.length))}${peakEntry[labelKey]} (${COLORS.red}${formatCost(peakEntry.totalCost)}${COLORS.reset})`,
 );
 
 printSeparator();
