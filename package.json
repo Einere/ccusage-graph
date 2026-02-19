@@ -24,6 +24,9 @@
     "type": "git",
     "url": "git+https://github.com/Einere/ccusage-graph.git"
   },
+  "scripts": {
+    "test": "node --test 'test/**/*.test.js'"
+  },
   "engines": {
     "node": ">=18"
   },
