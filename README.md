@@ -12,25 +12,25 @@ A CLI tool to visualize [ccusage](https://github.com/ryoppippi/ccusage) JSON rep
 
 ## Usage
 
-First, generate a JSON report with [ccusage](https://github.com/ryoppippi/ccusage):
+### Pipe from ccusage (recommended)
 
 ```bash
-# daily (default)
-npx ccusage@latest --json > report.json
-
-# weekly
-npx ccusage@latest weekly --json > report_weekly.json
-
-# monthly
-npx ccusage@latest monthly --json > report_monthly.json
+npx ccusage@latest --json | npx @einere/ccusage-graph
+npx ccusage@latest weekly --json | npx @einere/ccusage-graph
+npx ccusage@latest monthly --json | npx @einere/ccusage-graph
 ```
 
-Then pass the JSON file to `npx @einere/ccusage-graph`:
+### File argument
 
 ```bash
+npx ccusage@latest --json > report.json
 npx @einere/ccusage-graph report.json
-npx @einere/ccusage-graph report_weekly.json
-npx @einere/ccusage-graph report_monthly.json
+```
+
+### Redirect
+
+```bash
+npx @einere/ccusage-graph < report.json
 ```
 
 ## Output Example
