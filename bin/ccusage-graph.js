@@ -45,6 +45,17 @@ function printSeparator(char = "─", len = 80) {
   console.log(COLORS.dim + char.repeat(len) + COLORS.reset);
 }
 
+// --- Stdin Helper ---
+function readStdin() {
+  return new Promise((resolve, reject) => {
+    let data = "";
+    process.stdin.setEncoding("utf-8");
+    process.stdin.on("data", (chunk) => (data += chunk));
+    process.stdin.on("end", () => resolve(data));
+    process.stdin.on("error", reject);
+  });
+}
+
 // --- Main ---
 const filePath = process.argv[2];
 
@@ -59,7 +70,7 @@ let data;
 try {
   const raw = filePath
     ? readFileSync(resolve(filePath), "utf-8")
-    : readFileSync(0, "utf-8");
+    : await readStdin();
   data = JSON.parse(raw);
 } catch (err) {
   const source = filePath || "stdin";

@@ -90,6 +90,36 @@ describe("pipe mode", () => {
   });
 });
 
+// --- npx pipe mode ---
+
+const projectRoot = resolve(__dirname, "..");
+
+function runWithNpxPipe(jsonPath) {
+  return execSync(`cat "${jsonPath}" | npx .`, {
+    encoding: "utf-8",
+    timeout: 15000,
+    cwd: projectRoot,
+  });
+}
+
+describe("npx pipe mode", () => {
+  it("renders daily JSON via npx stdin pipe", () => {
+    const output = runWithNpxPipe(FIXTURES.daily);
+
+    assert.match(output, /Daily Cost/);
+    assert.match(output, /Daily Token Usage/);
+    assert.match(output, /Cost by Model/);
+    assert.match(output, /Summary/);
+  });
+
+  it("produces same output as file mode via npx", () => {
+    const fileOutput = run([FIXTURES.daily]);
+    const npxOutput = runWithNpxPipe(FIXTURES.daily);
+
+    assert.equal(fileOutput, npxOutput);
+  });
+});
+
 // --- Error cases ---
 
 describe("error handling", () => {
