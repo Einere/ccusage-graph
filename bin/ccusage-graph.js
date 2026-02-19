@@ -48,18 +48,22 @@ function printSeparator(char = "─", len = 80) {
 // --- Main ---
 const filePath = process.argv[2];
 
-if (!filePath) {
+if (!filePath && process.stdin.isTTY) {
   console.error(`${COLORS.red}Usage: ccusage-graph <path-to-ccusage.json>${COLORS.reset}`);
+  console.error(`       ccusage daily --json | ccusage-graph`);
   console.error(`  Example: ccusage-graph ccusage_260119_260218.json`);
   process.exit(1);
 }
 
 let data;
 try {
-  const raw = readFileSync(resolve(filePath), "utf-8");
+  const raw = filePath
+    ? readFileSync(resolve(filePath), "utf-8")
+    : readFileSync(0, "utf-8");
   data = JSON.parse(raw);
 } catch (err) {
-  console.error(`${COLORS.red}Error: Failed to read or parse ${filePath}${COLORS.reset}`);
+  const source = filePath || "stdin";
+  console.error(`${COLORS.red}Error: Failed to read or parse ${source}${COLORS.reset}`);
   console.error(err.message);
   process.exit(1);
 }
