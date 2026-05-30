@@ -82,7 +82,7 @@ try {
 // ── Detect data format ──
 let entries;
 let mode; // "daily" | "weekly" | "monthly"
-let labelKey; // "date" | "week" | "month"
+let labelKey; // "date" | "week" | "month"; latest ccusage uses "period" for all modes
 
 if (data.daily) {
   entries = data.daily;
@@ -108,8 +108,12 @@ const unitLabel = mode === "daily" ? "days" : mode === "weekly" ? "weeks" : "mon
 const peakLabel = mode === "daily" ? "Peak Day" : mode === "weekly" ? "Peak Week" : "Peak Month";
 const avgLabel = mode === "daily" ? "Avg/Day" : mode === "weekly" ? "Avg/Week" : "Avg/Month";
 
+function getPeriod(entry) {
+  return entry[labelKey] ?? entry.period;
+}
+
 function getLabel(entry) {
-  const raw = entry[labelKey];
+  const raw = getPeriod(entry);
   if (mode === "monthly") return raw; // "2026-01"
   return raw.slice(5); // "01-18" from "2026-01-18"
 }
@@ -192,7 +196,7 @@ console.log();
 console.log(`${COLORS.bold}${COLORS.cyan}📋 Summary${COLORS.reset}`);
 printSeparator();
 
-const dateRange = `${entries[0][labelKey]} → ${entries[entries.length - 1][labelKey]}`;
+const dateRange = `${getPeriod(entries[0])} → ${getPeriod(entries[entries.length - 1])}`;
 const activeCount = entries.length;
 const avgCost = totals.totalCost / activeCount;
 
@@ -209,7 +213,7 @@ console.log(
 
 const peakEntry = entries.reduce((max, d) => (d.totalCost > max.totalCost ? d : max));
 console.log(
-  `  ${COLORS.dim}${peakLabel}:${COLORS.reset}${" ".repeat(Math.max(1, 13 - peakLabel.length))}${peakEntry[labelKey]} (${COLORS.red}${formatCost(peakEntry.totalCost)}${COLORS.reset})`,
+  `  ${COLORS.dim}${peakLabel}:${COLORS.reset}${" ".repeat(Math.max(1, 13 - peakLabel.length))}${getPeriod(peakEntry)} (${COLORS.red}${formatCost(peakEntry.totalCost)}${COLORS.reset})`,
 );
 
 printSeparator();

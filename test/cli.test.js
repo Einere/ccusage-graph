@@ -35,8 +35,10 @@ describe("file mode", () => {
 
     assert.match(output, /Daily Cost/);
     assert.match(output, /Daily Token Usage/);
+    assert.match(output, /01-19/);
     assert.match(output, /Cost by Model/);
     assert.match(output, /Summary/);
+    assert.match(output, /Period:.*2026-01-19.*2026-05-29/);
   });
 
   it("renders weekly JSON", () => {
@@ -44,7 +46,9 @@ describe("file mode", () => {
 
     assert.match(output, /Weekly Cost/);
     assert.match(output, /Weekly Token Usage/);
+    assert.match(output, /01-19/);
     assert.match(output, /Summary/);
+    assert.match(output, /Period:.*2026-01-19.*2026-05-25/);
   });
 
   it("renders monthly JSON", () => {
@@ -52,7 +56,9 @@ describe("file mode", () => {
 
     assert.match(output, /Monthly Cost/);
     assert.match(output, /Monthly Token Usage/);
+    assert.match(output, /2026-01/);
     assert.match(output, /Summary/);
+    assert.match(output, /Period:.*2026-01.*2026-05/);
   });
 });
 
@@ -90,21 +96,21 @@ describe("pipe mode", () => {
   });
 });
 
-// --- npx pipe mode ---
+// --- Package bin pipe mode ---
 
 const projectRoot = resolve(__dirname, "..");
 
-function runWithNpxPipe(jsonPath) {
-  return execSync(`cat "${jsonPath}" | npx .`, {
+function runWithPackageBinPipe(jsonPath) {
+  return execSync(`cat "${jsonPath}" | node "${CLI}"`, {
     encoding: "utf-8",
     timeout: 15000,
     cwd: projectRoot,
   });
 }
 
-describe("npx pipe mode", () => {
-  it("renders daily JSON via npx stdin pipe", () => {
-    const output = runWithNpxPipe(FIXTURES.daily);
+describe("package bin pipe mode", () => {
+  it("renders daily JSON via stdin pipe from the package root", () => {
+    const output = runWithPackageBinPipe(FIXTURES.daily);
 
     assert.match(output, /Daily Cost/);
     assert.match(output, /Daily Token Usage/);
@@ -112,11 +118,11 @@ describe("npx pipe mode", () => {
     assert.match(output, /Summary/);
   });
 
-  it("produces same output as file mode via npx", () => {
+  it("produces same output as file mode from the package root", () => {
     const fileOutput = run([FIXTURES.daily]);
-    const npxOutput = runWithNpxPipe(FIXTURES.daily);
+    const packageBinOutput = runWithPackageBinPipe(FIXTURES.daily);
 
-    assert.equal(fileOutput, npxOutput);
+    assert.equal(fileOutput, packageBinOutput);
   });
 });
 
